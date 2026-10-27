@@ -1592,7 +1592,7 @@ TK.push({id:"m301",own:true,title:"Мој примјер 1 — „Козара�
  notes:["Ово је додатни примјер, није из уџбеника. У њему има сва 4 типа билансних промјена, један сложен став (22.03.), три конта која се отварају током мјесеца (Производња у току, Добављачи за основна средства, Пословни инвентар) и два конта која на крају имају салдо 0 (Купци, Добављачи за основна средства).","Савјет: прије књижења сваке промјене запитај се „шта се повећава, а шта смањује?“ и „је ли то актива или пасива?“."]});
 
 // --- Стање ---
-var G={grade:1,view:"home",tid:null,tab:"b",inp:{},rows:{},res:{},stats:{},wallet:{},gen:null,otv7000:true,ex:null,drill:null,dst:{n:0,ok:0,streak:0,best:0},quiz:{},time:{},log:[],pin:null};
+var G={grade:1,view:"home",tid:null,tab:"b",inp:{},rows:{},res:{},stats:{},wallet:{},gen:null,otv7000:true,ex:null,drill:null,dst:{n:0,ok:0,streak:0,best:0},quiz:{},time:{},log:[],pin:null,outbox:[],minSent:{}};
 var parentOK=false,pinTry="",pinNew="";
 function load(){try{var r=localStorage.getItem(G2KEY);if(r){var d=JSON.parse(r);for(var k in d)if(d.hasOwnProperty(k))G[k]=d[k];}}catch(e){}G.ex=null;if(G.view==="parent")G.view="home";}
 var saveT=null;
@@ -1605,8 +1605,24 @@ var lastAct=0;
 function act(){var n=Date.now();if(lastAct&&n-lastAct<120000&&!document.hidden){var k=dkey(n);G.time[k]=(G.time[k]||0)+(n-lastAct);saveSoon();}lastAct=n;}
 ["pointerdown","keydown","input"].forEach(function(ev2){document.addEventListener(ev2,act,true);});
 document.addEventListener("scroll",act,{passive:true,capture:true});
-document.addEventListener("visibilitychange",function(){if(document.hidden){lastAct=0;save();}});
-function logIt(o){o.ts=Date.now();G.log.push(o);if(G.log.length>600)G.log=G.log.slice(-600);saveSoon();}
+document.addEventListener("visibilitychange",function(){if(document.hidden){lastAct=0;queueTime();save();flushReport();}});
+function logIt(o){o.ts=Date.now();G.log.push(o);if(G.log.length>600)G.log=G.log.slice(-600);
+ queueRow({ts:o.ts,vrsta:o.drill?"Брзо контирање":o.show?"Погледао рјешење":"Провјера",razred:o.g,zadatak:o.title||"",rezim:o.mode||"",pct:o.show?"":(o.drill?(o.ok?100:0):o.pct),napomena:o.drill?(o.ok?"тачно":"нетачно"):""});
+ saveSoon();setTimeout(flushReport,1500);}
+
+// --- Извјештај у Google табелу родитеља (шаље се сам, ученик ништа не ради) ---
+// Адреса Google Apps Script веб-апликације родитеља; док је празна, редови се чувају у реду чекања.
+var REPORT_URL="";
+var sending=false;
+function minToday(){return Math.round((G.time[dkey(Date.now())]||0)/60000);}
+function queueRow(r){r.min=minToday();G.outbox.push(r);if(G.outbox.length>500)G.outbox=G.outbox.slice(-500);}
+function queueTime(){var k=dkey(Date.now()),m=minToday();if(m>0&&G.minSent[k]!==m){G.minSent[k]=m;queueRow({ts:Date.now(),vrsta:"Вријеме рада",razred:"",zadatak:"",rezim:"",pct:"",napomena:"активно данас "+m+" мин"});}}
+function flushReport(){var url=G.reportUrl||REPORT_URL;if(!url||sending||!G.outbox.length||!navigator.onLine)return;sending=true;var batch=G.outbox.slice(0,40);
+ fetch(url,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({rows:batch})})
+ .then(function(){G.outbox.splice(0,batch.length);save();sending=false;if(G.outbox.length)flushReport();})
+ .catch(function(){sending=false;});}
+window.addEventListener("online",flushReport);
+setInterval(function(){queueTime();flushReport();},5*60000);
 
 // --- Рјешавање задатка (рачуна тачно рјешење) ---
 function sumL(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i][1];return s;}
@@ -2021,7 +2037,8 @@ document.addEventListener("click",function(e){var b=e.target&&e.target.closest?e
 var dc1=window.doCheck,ds1=window.doShow;
 if(dc1)window.doCheck=function(){dc1.apply(this,arguments);try{var ks=Object.keys(S.chk),ok=0;ks.forEach(function(k){if(S.chk[k])ok++;});logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",pct:ks.length?Math.round(ok/ks.length*100):0});}catch(err){}};
 if(ds1)window.doShow=function(){ds1.apply(this,arguments);try{logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",show:true});}catch(err){}};
-window.G2={G:G,solve:solve,TK:TK,genTask:genTask,ACC:ACC};
+setTimeout(flushReport,3000);
+window.G2={G:G,flushReport:flushReport,solve:solve,TK:TK,genTask:genTask,ACC:ACC};
 render();
 })();
 </script><!--R2-END--></body></html>
