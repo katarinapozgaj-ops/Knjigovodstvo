@@ -1607,7 +1607,7 @@ function act(){var n=Date.now();if(lastAct&&n-lastAct<120000&&!document.hidden){
 document.addEventListener("scroll",act,{passive:true,capture:true});
 document.addEventListener("visibilitychange",function(){if(document.hidden){lastAct=0;queueTime();save();flushReport();}});
 function logIt(o){o.ts=Date.now();G.log.push(o);if(G.log.length>600)G.log=G.log.slice(-600);
- queueRow({ts:o.ts,vrsta:o.drill?"Брзо контирање":o.show?"Погледао рјешење":"Провјера",razred:o.g,zadatak:o.title||"",rezim:o.mode||"",pct:o.show?"":(o.drill?(o.ok?100:0):o.pct),napomena:o.drill?(o.ok?"тачно":"нетачно"):""});
+ queueRow({ts:o.ts,vrsta:o.drill?"Брзо контирање":o.show?"Погледао рјешење":"Провјера",razred:o.g,zadatak:o.title||"",rezim:o.mode||"",pct:o.show?"":(o.drill?(o.ok?100:0):o.pct),napomena:o.drill?(o.ok?"тачно":"нетачно"):(o.err||"")});
  saveSoon();setTimeout(flushReport,1500);}
 
 // --- Извјештај у Google табелу родитеља (шаље се сам, ученик ништа не ради) ---
@@ -1757,7 +1757,10 @@ function doCheck2(){
  mark("j-td",eq(pv(inpm["j-td"]),sol.totD),"j","Промет дневника — дугује",fmt(sol.totD),"Збир свих износа у колони дугује (без закључног става)");
  mark("j-tp",eq(pv(inpm["j-tp"]),sol.totP),"j","Промет дневника — потражује",fmt(sol.totP),"Мора бити једнак промету дугује");
  // 3) главна књига / пробни биланс
- sol.accs.forEach(function(a){var L=sol.led[a];["pd","pp","sd","sp"].forEach(function(c){mark("g-"+a+"-"+c,eq(pv(inpm["g-"+a+"-"+c]),L[c]),"g",an(a)+" — "+{pd:"промет дугује",pp:"промет потражује",sd:"салдо дугује",sp:"салдо потражује"}[c],L[c]?fmt(L[c]):"0 (празно)",ledExpl(a,L));});});
+ sol.accs.forEach(function(a){var L=sol.led[a];
+  // Празно поље је тачно (салдо 0) само ако је ученик попунио бар нешто за то конто
+  var filled=["pd","pp","sd","sp"].some(function(c){return String(inpm["g-"+a+"-"+c]||"").trim()!=="";});
+  ["pd","pp","sd","sp"].forEach(function(c){mark("g-"+a+"-"+c,filled&&eq(pv(inpm["g-"+a+"-"+c]),L[c]),"g",an(a)+" — "+{pd:"промет дугује",pp:"промет потражује",sd:"салдо дугује",sp:"салдо потражује"}[c],L[c]?fmt(L[c]):"0 (празно)",ledExpl(a,L));});});
  ["pd","pp","sd","sp"].forEach(function(c){mark("g-t-"+c,eq(pv(inpm["g-t-"+c]),sol.bruto[c]),"g","Збир пробног биланса — "+{pd:"промет Д",pp:"промет П",sd:"салдо Д",sp:"салдо П"}[c],fmt(sol.bruto[c]),c==="pd"||c==="pp"?"Збир промета у главној књизи = промет дневника ("+fmt(sol.totD)+")":"Збир салда дугује = збир салда потражује");});
  // 4) закључак
  if(sol.close){sol.close.D.forEach(function(x){mark("z-"+x[0],eq(pv(inpm["z-"+x[0]+"-d"]),x[1])&&!pv(inpm["z-"+x[0]+"-p"]),"z",an(x[0])+" — салдо за изравнање",fmt(x[1])+" на ДУГУЈЕ","Пасивно конто: салдо је на потражној страни, па се за изравнање уписује на дугује.");m["z-"+x[0]+"-d"]=m["z-"+x[0]+"-p"]=m["z-"+x[0]];});
@@ -1769,10 +1772,19 @@ function doCheck2(){
  G.res[G.tid]={m:m,tab:tab,errs:errs,pct:pct,ok:ok,tot:tot};
  var prev=G.stats[t.id]||{att:0,best:0};G.stats[t.id]={att:prev.att+1,best:Math.max(prev.best,pct)};
  var wasNew=false;if(!S.learn&&pct===100&&!G.wallet[t.id]){G.wallet[t.id]=t.km;wasNew=true;}
- logIt({g:2,id:t.id,title:t.title,mode:S.learn?"Учење":"Тест",pct:pct});
+ logIt({g:2,id:t.id,title:t.title,mode:S.learn?"Учење":"Тест",pct:pct,err:errSummary(errs,inpm)});
  save();render();
  if(pct===100&&typeof showSuccess==="function")setTimeout(function(){showSuccess(wasNew?t.km:null,S.learn);},250);
 }
+// Кратак опис грешака за извјештај родитељу, нпр. „Дневник: став 2, 5 · Главна књига: Купци“
+function errSummary(errs,inpm){
+ var any=Object.keys(inpm).some(function(k){return String(inpm[k]||"").trim()!=="";});
+ if(!any)return "ништа није уписано";
+ if(!errs.length)return "";
+ var names={b:"Биланс",j:"Дневник",g:"Главна књига",z:"Закључак"},by={};
+ errs.forEach(function(e){var l=e.l;if(e.tb==="j")l=l.replace(/^Став /,"").replace(/ \(.*\)$/,"");else if(e.tb==="g"||e.tb==="z")l=l.split(" — ")[0];if(!by[e.tb])by[e.tb]=[];if(by[e.tb].indexOf(l)<0)by[e.tb].push(l);});
+ var out=["b","j","g","z"].filter(function(k){return by[k];}).map(function(k){return names[k]+(k==="j"?": став ":": ")+by[k].join(", ");}).join(" · ");
+ return out.length>450?out.slice(0,447)+"…":out;}
 function ledExpl(a,L){var f=function(arr){return arr.length?arr.map(function(x){return x[0]+".) "+fmt(x[1]);}).join(" + "):"—";};
  var h="<b>"+an(a)+"</b><br>Дугује: "+f(L.D)+" = <b>"+fmt(L.pd)+"</b><br>Потражује: "+f(L.P)+" = <b>"+fmt(L.pp)+"</b><br>";
  if(L.sd)h+="Салдо = "+fmt(L.pd)+" − "+fmt(L.pp)+" = <b>"+fmt(L.sd)+"</b> на дуговној страни (дугује је веће).";
@@ -2036,7 +2048,7 @@ window.render=function(){if(G.grade===2)return renderG2();render1();
 document.addEventListener("click",function(e){var b=e.target&&e.target.closest?e.target.closest('[data-g2a="grade2parent"]'):null;if(!b)return;e.stopPropagation();G.grade=2;G.view="parent";parentOK=false;render();},true);
 // Биљежење резултата из 1. разреда (за преглед родитеља)
 var dc1=window.doCheck,ds1=window.doShow;
-if(dc1)window.doCheck=function(){dc1.apply(this,arguments);try{var ks=Object.keys(S.chk),ok=0;ks.forEach(function(k){if(S.chk[k])ok++;});logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",pct:ks.length?Math.round(ok/ks.length*100):0});}catch(err){}};
+if(dc1)window.doCheck=function(){dc1.apply(this,arguments);try{var ks=Object.keys(S.chk),ok=0;ks.forEach(function(k){if(S.chk[k])ok++;});var anyIn=Object.keys(S.inp).some(function(k){return String(S.inp[k]||"").trim()!=="";});logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",pct:ks.length?Math.round(ok/ks.length*100):0,err:anyIn?(ks.length-ok?"погрешних поља: "+(ks.length-ok)+" од "+ks.length:""):"ништа није уписано"});}catch(err){}};
 if(ds1)window.doShow=function(){ds1.apply(this,arguments);try{logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",show:true});}catch(err){}};
 setTimeout(flushReport,3000);
 window.G2={G:G,flushReport:flushReport,solve:solve,TK:TK,genTask:genTask,ACC:ACC};
