@@ -182,7 +182,7 @@ TK.push({id:"m301",own:true,title:"Мој примјер 1 — „Козара�
  notes:["Ово је додатни примјер, није из уџбеника. У њему има сва 4 типа билансних промјена, један сложен став (22.03.), три конта која се отварају током мјесеца (Производња у току, Добављачи за основна средства, Пословни инвентар) и два конта која на крају имају салдо 0 (Купци, Добављачи за основна средства).","Савјет: прије књижења сваке промјене запитај се „шта се повећава, а шта смањује?“ и „је ли то актива или пасива?“."]});
 
 // --- Стање ---
-var G={grade:1,view:"home",tid:null,tab:"b",inp:{},rows:{},res:{},stats:{},wallet:{},gen:null,otv7000:true,ex:null,drill:null,dst:{n:0,ok:0,streak:0,best:0},quiz:{},time:{},log:[],pin:null,outbox:[],minSent:{}};
+var G={grade:1,view:"home",tid:null,tab:"b",inp:{},rows:{},res:{},stats:{},wallet:{},gen:null,otv7000:true,ex:null,drill:null,dst:{n:0,ok:0,streak:0,best:0},quiz:{},time:{},log:[],pin:null,outbox:[],minSent:{},devId:Math.random().toString(36).slice(2,6),devName:""};
 var parentOK=false,pinTry="",pinNew="";
 function load(){try{var r=localStorage.getItem(G2KEY);if(r){var d=JSON.parse(r);for(var k in d)if(d.hasOwnProperty(k))G[k]=d[k];}}catch(e){}G.ex=null;if(G.view==="parent")G.view="home";}
 var saveT=null;
@@ -205,7 +205,7 @@ function logIt(o){o.ts=Date.now();G.log.push(o);if(G.log.length>600)G.log=G.log.
 var REPORT_URL="";
 var sending=false;
 function minToday(){return Math.round((G.time[dkey(Date.now())]||0)/60000);}
-function queueRow(r){r.min=minToday();G.outbox.push(r);if(G.outbox.length>500)G.outbox=G.outbox.slice(-500);}
+function queueRow(r){r.min=minToday();r.uredjaj=G.devName||("уређај "+G.devId);G.outbox.push(r);if(G.outbox.length>500)G.outbox=G.outbox.slice(-500);}
 function queueTime(){var k=dkey(Date.now()),m=minToday();if(m>0&&G.minSent[k]!==m){G.minSent[k]=m;queueRow({ts:Date.now(),vrsta:"Вријеме рада",razred:"",zadatak:"",rezim:"",pct:"",napomena:"активно данас "+m+" мин"});}}
 function flushReport(){var url=G.reportUrl||REPORT_URL;if(!url||sending||!G.outbox.length||!navigator.onLine)return;sending=true;var batch=G.outbox.slice(0,40);
  fetch(url,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({rows:batch})})
@@ -555,7 +555,7 @@ function renderParent(){var s='<div class="top"><button data-g2a="go" data-v="ho
  lg.forEach(function(l){var d=new Date(l.ts);var ts=("0"+d.getDate()).slice(-2)+"."+("0"+(d.getMonth()+1)).slice(-2)+". "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
   var r=l.show?'<span style="color:#f59e0b">погледао/ла рјешење</span>':l.drill?'<span style="color:'+(l.ok?"#4ade80":"#f87171")+'">'+(l.ok?"тачно":"нетачно")+'</span>':'<span style="color:'+(l.pct===100?"#4ade80":l.pct>=60?"#fcd34d":"#f87171")+'">'+l.pct+'%</span>';
   s+='<div class="g2-log"><span class="t">'+ts+'</span><span>'+l.g+'. р. · '+esc(l.title||"")+(l.mode?' <span style="color:#64748b">('+l.mode+')</span>':'')+'</span><span class="r">'+r+'</span></div>';});
- s+='</div><button class="btn2" data-g2a="pinlock">🔒 Закључај</button>';
+ s+='</div><div class="g2-box"><h3>📱 Име овог уређаја</h3><div class="g2-p" style="font-size:11px">Пише се у колону „Uređaj“ у Google табели, да се види чији је резултат (нпр. „Син“ на његовом телефону, „Мама“ на твом).</div><input class="gi" data-g2p="dev" value="'+esc(G.devName)+'" placeholder="нпр. Син" style="max-width:200px;text-align:left"> <button class="btn2" data-g2a="devsave">Сачувај</button></div><button class="btn2" data-g2a="pinlock">🔒 Закључај</button>';
  return s+'</div>';}
 
 // --- Почетна и област ---
@@ -613,6 +613,7 @@ document.addEventListener("click",function(e){var b=e.target&&e.target.closest?e
  else if(a==="dnext"){newDrill();save();render();}
  else if(a==="pinset"){var p=(document.querySelector('[data-g2p="new"]')||{}).value||"";if(!/^\d{4}$/.test(p)){alert("PIN мора имати тачно 4 цифре.");return;}G.pin=p;parentOK=true;save();render();}
  else if(a==="pinok"){var p2=(document.querySelector('[data-g2p="try"]')||{}).value||"";if(p2===G.pin){parentOK=true;render();}else alert("Погрешан PIN.");}
+ else if(a==="devsave"){G.devName=((document.querySelector('[data-g2p="dev"]')||{}).value||"").trim().slice(0,30);save();alert("Сачувано.");}
  else if(a==="pinlock"){parentOK=false;G.view="home";render();}
 },true);
 

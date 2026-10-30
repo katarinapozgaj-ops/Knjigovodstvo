@@ -1,7 +1,7 @@
 // Google Apps Script za табелу „Knjigovodstvo – izvještaj“.
 // Залијепити у табелу: Проширења → Apps Script, па Имплементирај → Нова имплементација → Веб-апликација
 // (Изврши као: Ја, Приступ: Свако). Добијени линк (…/exec) убацити у апликацију.
-var ZAGLAVLJE = ['Datum i vrijeme', 'Vrsta', 'Razred', 'Zadatak', 'Režim', 'Rezultat %', 'Napomena', 'Minuta danas'];
+var ZAGLAVLJE = ['Datum i vrijeme', 'Vrsta', 'Razred', 'Zadatak', 'Režim', 'Rezultat %', 'Napomena', 'Minuta danas', 'Uređaj'];
 
 function doPost(e) {
   var lock = LockService.getScriptLock();
@@ -15,7 +15,7 @@ function doPost(e) {
     var d = JSON.parse(e.postData.contents);
     var redovi = (d.rows || []).map(function (r) {
       return [new Date(r.ts), r.vrsta || '', r.razred || '', r.zadatak || '', r.rezim || '',
-        r.pct === '' || r.pct === undefined ? '' : r.pct, r.napomena || '', r.min === undefined ? '' : r.min];
+        r.pct === '' || r.pct === undefined ? '' : r.pct, r.napomena || '', r.min === undefined ? '' : r.min, r.uredjaj || ''];
     });
     if (redovi.length) {
       sh.getRange(sh.getLastRow() + 1, 1, redovi.length, ZAGLAVLJE.length).setValues(redovi);
