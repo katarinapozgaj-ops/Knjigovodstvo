@@ -1612,7 +1612,7 @@ function logIt(o){o.ts=Date.now();G.log.push(o);if(G.log.length>600)G.log=G.log.
 
 // --- Извјештај у Google табелу родитеља (шаље се сам, ученик ништа не ради) ---
 // Адреса Google Apps Script веб-апликације родитеља; док је празна, редови се чувају у реду чекања.
-var REPORT_URL="";
+var REPORT_URL="https://script.google.com/macros/s/AKfycbxaEkxaWHspmRutUU0wHo3j60WKd0T9swR6yAbp5ovC_BFO86jleFbeHRuS6cmKJh9Z/exec";
 var sending=false;
 function minToday(){return Math.round((G.time[dkey(Date.now())]||0)/60000);}
 function queueRow(r){r.min=minToday();r.uredjaj=G.devName||("уређај "+G.devId);G.outbox.push(r);if(G.outbox.length>500)G.outbox=G.outbox.slice(-500);}
