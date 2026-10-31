@@ -182,7 +182,7 @@ TK.push({id:"m301",own:true,title:"Мој примјер 1 — „Козара�
  notes:["Ово је додатни примјер, није из уџбеника. У њему има сва 4 типа билансних промјена, један сложен став (22.03.), три конта која се отварају током мјесеца (Производња у току, Добављачи за основна средства, Пословни инвентар) и два конта која на крају имају салдо 0 (Купци, Добављачи за основна средства).","Савјет: прије књижења сваке промјене запитај се „шта се повећава, а шта смањује?“ и „је ли то актива или пасива?“."]});
 
 // --- Стање ---
-var G={grade:1,view:"home",tid:null,tab:"b",inp:{},rows:{},res:{},stats:{},wallet:{},gen:null,otv7000:true,ex:null,drill:null,dst:{n:0,ok:0,streak:0,best:0},quiz:{},time:{},log:[],pin:null,outbox:[],minSent:{},devId:Math.random().toString(36).slice(2,6),devName:""};
+var G={grade:1,view:"home",tid:null,tab:"b",inp:{},rows:{},res:{},stats:{},wallet:{},gen:null,otv7000:true,ex:null,drill:null,dst:{n:0,ok:0,streak:0,best:0},quiz:{},time:{},log:[],pin:null,outbox:[],minSent:{},devId:Math.random().toString(36).slice(2,6),devName:"",allEx:{}};
 var parentOK=false,pinTry="",pinNew="";
 function load(){try{var r=localStorage.getItem(G2KEY);if(r){var d=JSON.parse(r);for(var k in d)if(d.hasOwnProperty(k))G[k]=d[k];}}catch(e){}G.ex=null;if(G.view==="parent")G.view="home";}
 var saveT=null;
@@ -309,7 +309,8 @@ function accSel(k,showOtv){var v=I()[k]||"";var s='<select class="'+cls(k)+'" da
  s+='</optgroup>';if(showOtv)s+='<optgroup label="Техничко конто"><option value="otv"'+(v==="otv"?" selected":"")+'>Отварање главне књиге</option></optgroup>';
  return s+'</select>';}
 function exBtn(k){if(!S.learn)return "";return '<button class="g2-exb" data-g2a="ex" data-v="'+k+'">💡 Објасни</button>';}
-function exBox(k,html){return G.ex===k?'<div class="g2-ex">'+html+'</div>':"";}
+function isOpen(k){return G.ex===k||(S.learn&&!!G.allEx[G.tid]);}
+function exBox(k,html){return isOpen(k)?'<div class="g2-ex">'+html+'</div>':"";}
 function sideLine(acc,side,amt){var t=ACC[acc].t;if(t==="X")return "<b>"+an(acc)+"</b> (техничко конто) → "+(side==="D"?"<span class='d'>ДУГУЈЕ</span>":"<span class='p'>ПОТРАЖУЈЕ</span>")+" "+fmt(amt);
  var inc=(t==="A"&&side==="D")||(t==="P"&&side==="P");
  return "<b>"+an(acc)+"</b> ("+(t==="A"?"актива":"пасива")+") се "+(inc?"<b>повећава</b>":"<b>смањује</b>")+" → "+(side==="D"?"<span class='d'>ДУГУЈЕ</span>":"<span class='p'>ПОТРАЖУЈЕ</span>")+" "+fmt(amt);}
@@ -383,7 +384,7 @@ function ledExpl(a,L){var f=function(arr){return arr.length?arr.map(function(x){
  else if(L.sp)h+="Салдо = "+fmt(L.pp)+" − "+fmt(L.pd)+" = <b>"+fmt(L.sp)+"</b> на потражној страни (потражује је веће).";
  else h+="Дугује = потражује, салдо је <b>0</b> (у пробном билансу пиши празно или 0).";
  return h;}
-function doShow2(){var t=curT(),sol=solve(t),inpm=I(),rows=R();
+function doShow2(){if(!S.learn)return;var t=curT(),sol=solve(t),inpm=I(),rows=R();G.allEx[G.tid]=true;
  t.ps.forEach(function(x,i){inpm["b-s-"+i]=ACC[x.a].t;});if(sol.kap!=null)inpm["b-kap"]=fmt(sol.kap);inpm["b-sa"]=fmt(sol.sumA);inpm["b-sp"]=fmt(sol.sumP);
  sol.st.forEach(function(s){var lines=s.D.map(function(x){return [x[0],x[1],0];}).concat(s.P.map(function(x){return [x[0],0,x[1]];}));rows[s.nr]=lines.length;
   lines.forEach(function(l,r){inpm["j-"+s.nr+"-"+r+"-a"]=l[0];inpm["j-"+s.nr+"-"+r+"-d"]=l[1]?fmt(l[1]):"";inpm["j-"+s.nr+"-"+r+"-p"]=l[2]?fmt(l[2]):"";});});
@@ -393,14 +394,14 @@ function doShow2(){var t=curT(),sol=solve(t),inpm=I(),rows=R();
  if(sol.close){sol.close.D.forEach(function(x){inpm["z-"+x[0]+"-d"]=fmt(x[1]);inpm["z-"+x[0]+"-p"]="";});sol.close.P.forEach(function(x){inpm["z-"+x[0]+"-p"]=fmt(x[1]);inpm["z-"+x[0]+"-d"]="";});inpm["z-ka"]=fmt(sol.endA);inpm["z-kp"]=fmt(sol.endP);}
  logIt({g:2,id:t.id,title:t.title,mode:S.learn?"Учење":"Тест",show:true});
  delete G.res[G.tid];save();render();}
-function doReset2(){delete G.inp[G.tid];delete G.rows[G.tid];delete G.res[G.tid];G.ex=null;save();render();}
+function doReset2(){delete G.allEx[G.tid];delete G.inp[G.tid];delete G.rows[G.tid];delete G.res[G.tid];G.ex=null;save();render();}
 
 // --- Приказ: картице задатка ---
 function tabBilans(t,sol){var s='<div class="g2-box"><h3>Почетни биланс</h3><div class="g2-note">За сваку ставку изабери да ли је <b>актива</b> (средство: шта предузеће има) или <b>пасива</b> (извор средстава: капитал и обавезе).'+(sol.kap!=null?' Капитал израчунај.':'')+'</div>';
  t.ps.forEach(function(x,i){var k="b-s-"+i,v=I()[k]||"";
   s+='<div class="g2-bl"><div class="nm">'+x.l+'</div><div class="amt">'+(x.v==null?inp("b-kap","израчунај"):'<div class="g2-fix">'+fmt(x.v)+'</div>')+'</div>';
   s+='<div class="side"><select class="'+cls(k)+'" data-g="'+k+'"><option value="">актива / пасива?</option><option value="A"'+(v==="A"?" selected":"")+'>Актива</option><option value="P"'+(v==="P"?" selected":"")+'>Пасива</option></select></div></div>';
-  if(S.learn&&G.ex===k)s+=exBox(k,ACC[x.a].t==="A"?"<b>"+x.l+"</b> је <b>средство</b>: нешто што предузеће посједује или му неко дугује → <span class='d'>АКТИВА</span>.":"<b>"+x.l+"</b> је <b>извор средстава</b>: "+(x.a==="kap"?"власников улог у предузеће":"обавеза, дуг који предузеће мора вратити")+" → <span class='p'>ПАСИВА</span>.");
+  if(S.learn&&isOpen(k))s+=exBox(k,ACC[x.a].t==="A"?"<b>"+x.l+"</b> је <b>средство</b>: нешто што предузеће посједује или му неко дугује → <span class='d'>АКТИВА</span>.":"<b>"+x.l+"</b> је <b>извор средстава</b>: "+(x.a==="kap"?"власников улог у предузеће":"обавеза, дуг који предузеће мора вратити")+" → <span class='p'>ПАСИВА</span>.");
   if(S.learn)s+='<div style="text-align:right;margin:-2px 0 4px">'+exBtn(k)+'</div>';});
  s+='<div class="g2-bl" style="border:none;margin-top:6px"><div class="nm">Σ Актива</div><div class="amt">'+inp("b-sa")+'</div></div>';
  s+='<div class="g2-bl" style="border:none"><div class="nm">Σ Пасива</div><div class="amt">'+inp("b-sp")+'</div></div>';
@@ -482,7 +483,7 @@ function tabSol(t,sol){var s='';
 function renderTask(){var t=curT();if(!t){G.view="area";return renderG2();}
  var sol=solve(t),rs=G.res[G.tid];
  var tabs=[["b","1) Биланс"],["j","2) Дневник"],["g","3) Главна књига"]];if(t.close)tabs.push(["z","4) Закључак"]);
- if(S.learn||rs)tabs.push(["s","📘 Рјешење"]);
+ if(S.learn)tabs.push(["s","📘 Рјешење"]);
  if(!tabs.some(function(x){return x[0]===G.tab;}))G.tab="b";
  var s='<div class="top"><button data-g2a="go" data-v="area">← Назад</button><div style="font-size:10px;color:#94a3b8">'+(rs?'<span style="color:'+(rs.pct===100?"#22c55e":"#f59e0b")+';font-weight:700">'+rs.ok+'/'+rs.tot+'</span> ':'');
  s+='<span class="mode-ind '+(S.learn?'learn':'test')+'" data-g2a="mode">'+(S.learn?'🎓 Учење':'📝 Тест '+t.km+'КМ')+'</span></div></div>';
@@ -493,7 +494,7 @@ function renderTask(){var t=curT();if(!t){G.view="area";return renderG2();}
  s+='<div class="tabs">';tabs.forEach(function(x){var c="";if(rs&&rs.tab[x[0]]){var q=rs.tab[x[0]];c='<span class="g2-tabchk" style="color:'+(q[0]===q[1]?"#4ade80":"#f87171")+'">'+(q[0]===q[1]?"✓":q[0]+"/"+q[1])+'</span>';}s+='<span class="tb'+(G.tab===x[0]?" on":"")+'" data-g2a="tab" data-v="'+x[0]+'">'+x[1]+c+'</span>';});s+='</div>';
  if(G.tab==="b"&&t.notes&&t.notes.length)t.notes.forEach(function(nt){s+='<div class="g2-note g2-warn">'+nt+'</div>';});
  if(G.tab==="b")s+=tabBilans(t,sol);else if(G.tab==="j")s+=tabDnevnik(t,sol);else if(G.tab==="g")s+=tabGK(t,sol);else if(G.tab==="z")s+=tabZak(t,sol);else s+=tabSol(t,sol);
- if(G.tab!=="s"){s+='<div class="g2-actions"><button class="btn1" data-g2a="check">✓ Провјери све</button><button class="btn2" data-g2a="show">👁 Одговори</button><button class="btn2" data-g2a="reset">🔄 Поново</button></div>';
+ if(G.tab!=="s"){s+='<div class="g2-actions"><button class="btn1" data-g2a="check">✓ Провјери све</button>'+(S.learn?'<button class="btn2" data-g2a="show">👁 Одговори са објашњењем</button>'+(G.allEx[G.tid]?'<button class="btn2" data-g2a="hideex">🙈 Сакриј објашњења</button>':''):'')+'<button class="btn2" data-g2a="reset">🔄 Поново</button></div>';
   if(rs){s+='<div class="res '+(rs.pct===100?"rok":"rpt")+'">'+(rs.pct===100?(S.learn?"🎉 Све тачно! Пребаци на Тест мод да зарадиш КМ.":"🎉 Све тачно!"+(G.wallet[t.id]?" Зарађено: "+G.wallet[t.id]+" КМ":"")):"Тачно "+rs.ok+" од "+rs.tot+" ("+rs.pct+"%). Погледај картице са црвеним бројем.")+'</div>';
    var er=rs.errs.filter(function(e){return e.tb===G.tab;});
    if(er.length){s+='<div class="errpanel"><div class="eptitle">❌ Грешке на овој картици ('+er.length+')</div>';
@@ -613,7 +614,11 @@ document.addEventListener("click",function(e){var b=e.target&&e.target.closest?e
  if(a==="go"){G.view=v;G.ex=null;if(v!=="parent")parentOK=false;window.scrollTo(0,0);render();}
  else if(a==="open"){G.tid=v;G.view="task";G.tab="b";G.ex=null;S.showTT=true;window.scrollTo(0,0);render();}
  else if(a==="tab"){G.tab=v;G.ex=null;render();}
- else if(a==="mode"){S.learn=!S.learn;G.ex=null;render();}
+ else if(a==="mode"){
+  // Ако су у Учењу приказани одговори, Тест почиње испочетка (да се КМ не зарађују на готовом рјешењу)
+  if(S.learn&&G.allEx[G.tid]){if(!confirm("Видио/ла си рјешење. Тест почиње испочетка, уписано ће се обрисати. Наставити?"))return;delete G.allEx[G.tid];delete G.inp[G.tid];delete G.rows[G.tid];delete G.res[G.tid];}
+  S.learn=!S.learn;G.ex=null;if(!S.learn&&G.tab==="s")G.tab="b";save();render();}
+ else if(a==="hideex"){delete G.allEx[G.tid];G.ex=null;save();render();}
  else if(a==="otv"){G.otv7000=v==="1";if(G.res[G.tid])delete G.res[G.tid];render();}
  else if(a==="ex"){G.ex=G.ex===v?null:v;render();}
  else if(a==="addrow"){var t=curT(),sol=solve(t),st=sol.st.filter(function(x){return x.nr===v;})[0];R()[v]=stavRows(st)+1;render();}
@@ -641,7 +646,14 @@ document.addEventListener("click",function(e){var b=e.target&&e.target.closest?e
 // Биљежење резултата из 1. разреда (за преглед родитеља)
 var dc1=window.doCheck,ds1=window.doShow;
 if(dc1)window.doCheck=function(){dc1.apply(this,arguments);try{var ks=Object.keys(S.chk),ok=0;ks.forEach(function(k){if(S.chk[k])ok++;});var anyIn=Object.keys(S.inp).some(function(k){return String(S.inp[k]||"").trim()!=="";});logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",pct:ks.length?Math.round(ok/ks.length*100):0,err:anyIn?(ks.length-ok?"погрешних поља: "+(ks.length-ok)+" од "+ks.length:""):"ништа није уписано"});}catch(err){}};
-if(ds1)window.doShow=function(){ds1.apply(this,arguments);try{logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",show:true});}catch(err){}};
+if(S.task&&G.allEx1===S.task.id)S.allEx=true;
+window.togMode1=function(){saveDOM();
+ if(S.learn&&(S.allEx||(S.task&&G.allEx1===S.task.id))){if(!confirm("Видио/ла си рјешење. Тест почиње испочетка, уписано ће се обрисати. Наставити?"))return;S.inp={};S.chk={};S.allEx=false;G.allEx1=null;save();}
+ S.learn=!S.learn;S.skipRead=true;render();S.skipRead=false;};
+var dr1=window.doReset,st1=window.startTask;
+if(dr1)window.doReset=function(){S.allEx=false;G.allEx1=null;save();dr1.apply(this,arguments);};
+if(st1)window.startTask=function(){S.allEx=false;return st1.apply(this,arguments);};
+if(ds1)window.doShow=function(){if(!S.learn)return;S.allEx=true;G.allEx1=S.task&&S.task.id;save();ds1.apply(this,arguments);try{logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",show:true});}catch(err){}};
 setTimeout(flushReport,3000);
 window.G2={G:G,flushReport:flushReport,solve:solve,TK:TK,genTask:genTask,ACC:ACC};
 render();

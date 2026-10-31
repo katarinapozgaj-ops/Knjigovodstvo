@@ -189,6 +189,8 @@ tbody td{padding:3px 2px;font-size:10px;border-bottom:1px solid rgba(255,255,255
 .errpanel .eritem .erloc{color:#f87171;font-weight:700;margin-bottom:2px}
 .errpanel .eritem .erwrong{color:#fca5a5}
 .errpanel .eritem .erright{color:#86efac}
+.mob-card .exinl{min-width:0;max-width:none;word-break:break-word}
+.exinl{margin-top:3px;font-size:9px;line-height:1.45;color:#cbd5e1;background:#0f172a;border-left:2px solid #fbbf24;border-radius:4px;padding:4px 6px;text-align:left;font-weight:400;min-width:150px;max-width:260px;white-space:normal}
 .errpanel .eritem .erexp{color:#94a3b8;margin-top:3px;font-size:9px;line-height:1.5}
 .errpanel .erok{padding:8px;text-align:center;color:#4ade80;font-weight:700}
 /* Edu cards on menu page */
@@ -825,7 +827,8 @@ s+='<td style="position:relative;padding:2px"><div style="display:flex;align-ite
 s+='<input class="'+cls+'" data-k="'+k+'" value="'+(val+"").replace(/"/g,"&quot;")+'" placeholder="·">';
 if(S.learn&&exT)s+='<span class="hb" data-h="'+k+'">\u2726</span>';
 s+='</div>';
-if(st2===false)s+='<div style="font-size:7px;color:#ef4444;text-align:right">→'+fmt(cv)+'</div>';
+if(st2===false&&S.learn)s+='<div style="font-size:7px;color:#ef4444;text-align:right">→'+fmt(cv)+'</div>';
+if(S.allEx&&S.learn&&exT)s+='<div class="exinl">'+exT+'</div>';
 if(S.learn&&exT)s+='<button class="hb-mob" data-h="'+k+'">\ud83d\udca1 \u041e\u0431\u0458\u0430\u0441\u043d\u0438</button>';
 if(S.expK===k&&exT)s+='<div class="tip"><b>'+lbl[ci]+'</b><br>'+exT+'<div class="cl" data-hc="1">✕ затвори</div></div>';
 s+='</td>';}}s+='</tr>';}
@@ -863,7 +866,8 @@ s+='<div class="mc-field"><div class="mc-label">'+lbl[ci2]+'</div><div class="mc
 s+='<input class="'+cls3+'" data-k="'+k2+'" value="'+(val3+"").replace(/"/g,"&quot;")+'" placeholder="·">';
 if(S.learn&&exT2)s+='<span class="hb" data-h="'+k2+'">\u2726</span>';
 s+='</div>';
-if(st4===false)s+='<div style="font-size:7px;color:#ef4444;text-align:center">→'+fmt(cv2)+'</div>';
+if(st4===false&&S.learn)s+='<div style="font-size:7px;color:#ef4444;text-align:center">→'+fmt(cv2)+'</div>';
+if(S.allEx&&S.learn&&exT2)s+='<div class="exinl">'+exT2+'</div>';
 if(S.learn&&exT2)s+='<button class="hb-mob" data-h="'+k2+'">\ud83d\udca1 \u041e\u0431\u0458\u0430\u0441\u043d\u0438</button>';
 if(S.expK===k2&&exT2)s+='<div class="tip" style="left:0;width:250px"><b>'+lbl[ci2]+'</b><br>'+exT2+'<div class="cl" data-hc="1">✕ затвори</div></div>';
 s+='</div>';}
@@ -909,11 +913,11 @@ var s='<div style="padding:12px;font-size:11px;overflow-x:auto"><div style="font
 s+='<table style="min-width:auto"><thead><tr><th>Мат.</th><th>Дугује</th><th>Потр.</th><th>Салдо</th></tr></thead><tbody>';
 for(var i=0;i<mjd.length;i++){var mr=mjd[i];var kdg="mj-"+i+"-dg",kpt="mj-"+i+"-ptr",ksl="mj-"+i+"-sl";
 s+='<tr><td style="font-weight:700">'+mr.lb+'</td>';
-s+='<td style="padding:2px">'+mkI(kdg);if(S.chk[kdg]===false)s+='<div style="font-size:7px;color:#ef4444;text-align:right">\u2192'+fmt(mr.dg)+'</div>';s+='</td>';
-s+='<td style="padding:2px">'+mkI(kpt);if(S.chk[kpt]===false)s+='<div style="font-size:7px;color:#ef4444;text-align:right">\u2192'+fmt(mr.ptr)+'</div>';s+='</td>';
-s+='<td style="padding:2px">'+mkI(ksl);if(S.chk[ksl]===false)s+='<div style="font-size:7px;color:#ef4444;text-align:right">\u2192'+fmt(mr.sl)+'</div>';s+='</td></tr>';}
+s+='<td style="padding:2px">'+mkI(kdg);if(S.chk[kdg]===false&&S.learn)s+='<div style="font-size:7px;color:#ef4444;text-align:right">\u2192'+fmt(mr.dg)+'</div>';s+='</td>';
+s+='<td style="padding:2px">'+mkI(kpt);if(S.chk[kpt]===false&&S.learn)s+='<div style="font-size:7px;color:#ef4444;text-align:right">\u2192'+fmt(mr.ptr)+'</div>';s+='</td>';
+s+='<td style="padding:2px">'+mkI(ksl);if(S.chk[ksl]===false&&S.learn)s+='<div style="font-size:7px;color:#ef4444;text-align:right">\u2192'+fmt(mr.sl)+'</div>';s+='</td></tr>';}
 var tDg=mjd[0].dg+mjd[1].dg,tPt=mjd[0].ptr+mjd[1].ptr,tSl=mjd[0].sl+mjd[1].sl;
-s+='<tr class="ansr"><td>\u0423\u041a\u0423\u041f\u041d\u041e</td><td style="text-align:right">'+fmt(tDg)+'</td><td style="text-align:right">'+fmt(tPt)+'</td><td style="text-align:right">'+fmt(tSl)+'</td></tr>';
+if(S.learn||Object.keys(S.chk).some(function(k){return k.indexOf("mj-")===0;}))s+='<tr class="ansr"><td>\u0423\u041a\u0423\u041f\u041d\u041e</td><td style="text-align:right">'+fmt(tDg)+'</td><td style="text-align:right">'+fmt(tPt)+'</td><td style="text-align:right">'+fmt(tSl)+'</td></tr>';
 s+='</tbody></table><div class="inf" style="margin-top:8px">\u0421\u0430\u043b\u0434\u043e ('+fmt(tSl)+') \u043c\u043e\u0440\u0430 = \u0441\u0438\u043d\u0442\u0435\u0442\u0438\u0447\u043a\u043e\u043c \u043a\u043e\u043d\u0442\u0443!</div></div>';
 return s;}
 
@@ -1092,7 +1096,7 @@ s+='</div>';el.innerHTML=s;saveProgress();return;}
 var t=S.task,d=S.data;
 var s='<div class="top"><button onclick="S.view=\'menu\';render()">← Назад</button><div style="font-size:10px;color:#94a3b8">';
 if(anyC)s+='<span style="color:'+(allOk?"#22c55e":"#f59e0b")+';font-weight:700">'+okN+'/'+totN+'</span> ';
-s+='<span class="mode-ind '+(S.learn?'learn':'test')+'" onclick="saveDOM();S.learn=!S.learn;S.skipRead=true;render();S.skipRead=false">'+(S.learn?'\ud83c\udf93 \u0423\u0447\u0435\u045a\u0435':'\ud83d\udcdd \u0422\u0435\u0441\u0442 '+S.task.km+'\u041a\u041c')+'</span></div></div>';
+s+='<span class="mode-ind '+(S.learn?'learn':'test')+'" onclick="togMode1()">'+(S.learn?'\ud83c\udf93 \u0423\u0447\u0435\u045a\u0435':'\ud83d\udcdd \u0422\u0435\u0441\u0442 '+S.task.km+'\u041a\u041c')+'</span></div></div>';
 s+='<div class="tt"><div class="tth" onclick="togTT()"><span>\ud83d\udccb '+t.title+'</span><span class="tt-arr">'+(S.showTT?"\u25b2":"\u25bc")+'</span></div>';
 if(S.showTT){if(t.info&&t.info.length){s+='<div class="inf">';for(var ii=0;ii<t.info.length;ii++)s+=t.info[ii]+'<br>';s+='</div>';}
 for(var tli=0;tli<t.tt.length;tli++)s+='<div class="ttl">'+t.tt[tli]+'</div>';}s+='</div>';
@@ -1147,7 +1151,8 @@ function mkIzv(k){
  var mob=S.learn&&izEx[k]?'<button class="hb-mob" data-h="'+k+'">\ud83d\udca1 \u041e\u0431\u0458\u0430\u0441\u043d\u0438</button>':'';
  var tip=(S.expK===k&&izEx[k])?'<div class="tip"><b>Појашњење</b><br>'+izEx[k]+'<div class="cl" data-hc="1">✕ затвори</div></div>':'';
  var err='';
- if(st===false){err='<div style="font-size:7px;color:#ef4444;text-align:right">\u2192'+fmt(correctMap[k])+'</div>';}
+ if(S.allEx&&S.learn&&izEx[k])err+='<div class="exinl">'+izEx[k]+'</div>';
+ if(st===false&&S.learn){err+='<div style="font-size:7px;color:#ef4444;text-align:right">\u2192'+fmt(correctMap[k])+'</div>';}
  return '<td style="position:relative;padding:2px"><div style="display:flex;align-items:center">'+inp+star+'</div>'+err+mob+tip+'</td>';
 }
 
@@ -1192,7 +1197,7 @@ else if(cur.m==="dob"){var dk=cur.k;s+=bldT(dk,d[dk],["dg","pt","sl"],["Дугу
 else if(cur.m==="ziro"){s+=bldT("ziro",d.ziro,["dg","pt","sl"],["Дугује","Потраж.","Салдо"]);}
 else if(cur.k==="poj"){s+='<div style="padding:8px">';for(var pi=0;pi<POJ.length;pi++)s+='<div class="pjr"><span class="pjt">'+POJ[pi][0]+'</span><span class="pjd">'+POJ[pi][1]+'</span></div>';s+='</div>';}
 s+='</div>';
-s+='<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><button class="btn1" onclick="doCheck()">✓ Провјери</button><button class="btn2" onclick="doShow()">👁 Одговори</button><button class="btn2" onclick="doReset()">🔄 Поново</button></div>';
+s+='<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><button class="btn1" onclick="doCheck()">✓ Провјери</button>'+(S.learn?'<button class="btn2" onclick="doShow()">👁 Одговори</button>':'')+'<button class="btn2" onclick="doReset()">🔄 Поново</button></div>';
 if(anyC){var pctR=Math.round(okN/totN*100);var earnedR=S.wallet[S.task.id];
 s+='<div class="res '+(allOk?"rok":"rpt")+'">';
 if(allOk&&!S.learn&&earnedR)s+='\ud83c\udf89 \u0421\u0432\u0435 \u0442\u0430\u0447\u043d\u043e! \u0417\u0430\u0440\u0430\u0434\u0438\u043e/\u043b\u0430: <b>'+earnedR+' \u041a\u041c</b> \ud83d\udcb0';
@@ -1217,7 +1222,7 @@ var exObj=rows[ri].ex||{};var exT=typeof exObj==="object"?exObj[cols[ci]]:"";
 s+='<div class="eritem">';
 s+='<div class="erloc">'+rows[ri].n+' \u2192 '+lbls[ci]+'</div>';
 s+='<div class="erwrong">\u2717 \u0422\u0432\u043e\u0458 \u043e\u0434\u0433\u043e\u0432\u043e\u0440: '+fmt(uval)+'</div>';
-s+='<div class="erright">\u2713 \u0422\u0430\u0447\u043d\u043e: '+fmt(cv)+'</div>';
+if(S.learn)s+='<div class="erright">\u2713 \u0422\u0430\u0447\u043d\u043e: '+fmt(cv)+'</div>';
 if(exT)s+='<div class="erexp">\ud83d\udca1 '+exT+'</div>';
 s+='</div>';}}}}
 if(errCnt===0)s+='<div class="erok">\u0421\u0432\u0430 \u043f\u043e\u0459\u0430 \u0441\u0443 \u0442\u0430\u0447\u043d\u0430, \u043f\u0440\u043e\u0432\u0458\u0435\u0440\u0438 \u0440\u0435\u0434 \u0423\u041a\u0423\u041f\u041d\u041e!</div>';
@@ -1238,7 +1243,7 @@ S.task.izvodCfg.forEach(function(c){
   s+='<div class="eritem">';
   s+='<div class="erloc">'+item[2]+'</div>';
   s+='<div class="erwrong">\u2717 \u0422\u0432\u043e\u0458 \u043e\u0434\u0433\u043e\u0432\u043e\u0440: '+fmt(uvIz)+'</div>';
-  s+='<div class="erright">\u2713 \u0422\u0430\u0447\u043d\u043e: '+fmt(item[1])+'</div>';
+  if(S.learn)s+='<div class="erright">\u2713 \u0422\u0430\u0447\u043d\u043e: '+fmt(item[1])+'</div>';
   s+='<div class="erexp">\ud83d\udca1 '+item[3]+'</div>';
   s+='</div>';
  }});
@@ -1592,7 +1597,7 @@ TK.push({id:"m301",own:true,title:"Мој примјер 1 — „Козара�
  notes:["Ово је додатни примјер, није из уџбеника. У њему има сва 4 типа билансних промјена, један сложен став (22.03.), три конта која се отварају током мјесеца (Производња у току, Добављачи за основна средства, Пословни инвентар) и два конта која на крају имају салдо 0 (Купци, Добављачи за основна средства).","Савјет: прије књижења сваке промјене запитај се „шта се повећава, а шта смањује?“ и „је ли то актива или пасива?“."]});
 
 // --- Стање ---
-var G={grade:1,view:"home",tid:null,tab:"b",inp:{},rows:{},res:{},stats:{},wallet:{},gen:null,otv7000:true,ex:null,drill:null,dst:{n:0,ok:0,streak:0,best:0},quiz:{},time:{},log:[],pin:null,outbox:[],minSent:{},devId:Math.random().toString(36).slice(2,6),devName:""};
+var G={grade:1,view:"home",tid:null,tab:"b",inp:{},rows:{},res:{},stats:{},wallet:{},gen:null,otv7000:true,ex:null,drill:null,dst:{n:0,ok:0,streak:0,best:0},quiz:{},time:{},log:[],pin:null,outbox:[],minSent:{},devId:Math.random().toString(36).slice(2,6),devName:"",allEx:{}};
 var parentOK=false,pinTry="",pinNew="";
 function load(){try{var r=localStorage.getItem(G2KEY);if(r){var d=JSON.parse(r);for(var k in d)if(d.hasOwnProperty(k))G[k]=d[k];}}catch(e){}G.ex=null;if(G.view==="parent")G.view="home";}
 var saveT=null;
@@ -1719,7 +1724,8 @@ function accSel(k,showOtv){var v=I()[k]||"";var s='<select class="'+cls(k)+'" da
  s+='</optgroup>';if(showOtv)s+='<optgroup label="Техничко конто"><option value="otv"'+(v==="otv"?" selected":"")+'>Отварање главне књиге</option></optgroup>';
  return s+'</select>';}
 function exBtn(k){if(!S.learn)return "";return '<button class="g2-exb" data-g2a="ex" data-v="'+k+'">💡 Објасни</button>';}
-function exBox(k,html){return G.ex===k?'<div class="g2-ex">'+html+'</div>':"";}
+function isOpen(k){return G.ex===k||(S.learn&&!!G.allEx[G.tid]);}
+function exBox(k,html){return isOpen(k)?'<div class="g2-ex">'+html+'</div>':"";}
 function sideLine(acc,side,amt){var t=ACC[acc].t;if(t==="X")return "<b>"+an(acc)+"</b> (техничко конто) → "+(side==="D"?"<span class='d'>ДУГУЈЕ</span>":"<span class='p'>ПОТРАЖУЈЕ</span>")+" "+fmt(amt);
  var inc=(t==="A"&&side==="D")||(t==="P"&&side==="P");
  return "<b>"+an(acc)+"</b> ("+(t==="A"?"актива":"пасива")+") се "+(inc?"<b>повећава</b>":"<b>смањује</b>")+" → "+(side==="D"?"<span class='d'>ДУГУЈЕ</span>":"<span class='p'>ПОТРАЖУЈЕ</span>")+" "+fmt(amt);}
@@ -1793,7 +1799,7 @@ function ledExpl(a,L){var f=function(arr){return arr.length?arr.map(function(x){
  else if(L.sp)h+="Салдо = "+fmt(L.pp)+" − "+fmt(L.pd)+" = <b>"+fmt(L.sp)+"</b> на потражној страни (потражује је веће).";
  else h+="Дугује = потражује, салдо је <b>0</b> (у пробном билансу пиши празно или 0).";
  return h;}
-function doShow2(){var t=curT(),sol=solve(t),inpm=I(),rows=R();
+function doShow2(){if(!S.learn)return;var t=curT(),sol=solve(t),inpm=I(),rows=R();G.allEx[G.tid]=true;
  t.ps.forEach(function(x,i){inpm["b-s-"+i]=ACC[x.a].t;});if(sol.kap!=null)inpm["b-kap"]=fmt(sol.kap);inpm["b-sa"]=fmt(sol.sumA);inpm["b-sp"]=fmt(sol.sumP);
  sol.st.forEach(function(s){var lines=s.D.map(function(x){return [x[0],x[1],0];}).concat(s.P.map(function(x){return [x[0],0,x[1]];}));rows[s.nr]=lines.length;
   lines.forEach(function(l,r){inpm["j-"+s.nr+"-"+r+"-a"]=l[0];inpm["j-"+s.nr+"-"+r+"-d"]=l[1]?fmt(l[1]):"";inpm["j-"+s.nr+"-"+r+"-p"]=l[2]?fmt(l[2]):"";});});
@@ -1803,14 +1809,14 @@ function doShow2(){var t=curT(),sol=solve(t),inpm=I(),rows=R();
  if(sol.close){sol.close.D.forEach(function(x){inpm["z-"+x[0]+"-d"]=fmt(x[1]);inpm["z-"+x[0]+"-p"]="";});sol.close.P.forEach(function(x){inpm["z-"+x[0]+"-p"]=fmt(x[1]);inpm["z-"+x[0]+"-d"]="";});inpm["z-ka"]=fmt(sol.endA);inpm["z-kp"]=fmt(sol.endP);}
  logIt({g:2,id:t.id,title:t.title,mode:S.learn?"Учење":"Тест",show:true});
  delete G.res[G.tid];save();render();}
-function doReset2(){delete G.inp[G.tid];delete G.rows[G.tid];delete G.res[G.tid];G.ex=null;save();render();}
+function doReset2(){delete G.allEx[G.tid];delete G.inp[G.tid];delete G.rows[G.tid];delete G.res[G.tid];G.ex=null;save();render();}
 
 // --- Приказ: картице задатка ---
 function tabBilans(t,sol){var s='<div class="g2-box"><h3>Почетни биланс</h3><div class="g2-note">За сваку ставку изабери да ли је <b>актива</b> (средство: шта предузеће има) или <b>пасива</b> (извор средстава: капитал и обавезе).'+(sol.kap!=null?' Капитал израчунај.':'')+'</div>';
  t.ps.forEach(function(x,i){var k="b-s-"+i,v=I()[k]||"";
   s+='<div class="g2-bl"><div class="nm">'+x.l+'</div><div class="amt">'+(x.v==null?inp("b-kap","израчунај"):'<div class="g2-fix">'+fmt(x.v)+'</div>')+'</div>';
   s+='<div class="side"><select class="'+cls(k)+'" data-g="'+k+'"><option value="">актива / пасива?</option><option value="A"'+(v==="A"?" selected":"")+'>Актива</option><option value="P"'+(v==="P"?" selected":"")+'>Пасива</option></select></div></div>';
-  if(S.learn&&G.ex===k)s+=exBox(k,ACC[x.a].t==="A"?"<b>"+x.l+"</b> је <b>средство</b>: нешто што предузеће посједује или му неко дугује → <span class='d'>АКТИВА</span>.":"<b>"+x.l+"</b> је <b>извор средстава</b>: "+(x.a==="kap"?"власников улог у предузеће":"обавеза, дуг који предузеће мора вратити")+" → <span class='p'>ПАСИВА</span>.");
+  if(S.learn&&isOpen(k))s+=exBox(k,ACC[x.a].t==="A"?"<b>"+x.l+"</b> је <b>средство</b>: нешто што предузеће посједује или му неко дугује → <span class='d'>АКТИВА</span>.":"<b>"+x.l+"</b> је <b>извор средстава</b>: "+(x.a==="kap"?"власников улог у предузеће":"обавеза, дуг који предузеће мора вратити")+" → <span class='p'>ПАСИВА</span>.");
   if(S.learn)s+='<div style="text-align:right;margin:-2px 0 4px">'+exBtn(k)+'</div>';});
  s+='<div class="g2-bl" style="border:none;margin-top:6px"><div class="nm">Σ Актива</div><div class="amt">'+inp("b-sa")+'</div></div>';
  s+='<div class="g2-bl" style="border:none"><div class="nm">Σ Пасива</div><div class="amt">'+inp("b-sp")+'</div></div>';
@@ -1892,7 +1898,7 @@ function tabSol(t,sol){var s='';
 function renderTask(){var t=curT();if(!t){G.view="area";return renderG2();}
  var sol=solve(t),rs=G.res[G.tid];
  var tabs=[["b","1) Биланс"],["j","2) Дневник"],["g","3) Главна књига"]];if(t.close)tabs.push(["z","4) Закључак"]);
- if(S.learn||rs)tabs.push(["s","📘 Рјешење"]);
+ if(S.learn)tabs.push(["s","📘 Рјешење"]);
  if(!tabs.some(function(x){return x[0]===G.tab;}))G.tab="b";
  var s='<div class="top"><button data-g2a="go" data-v="area">← Назад</button><div style="font-size:10px;color:#94a3b8">'+(rs?'<span style="color:'+(rs.pct===100?"#22c55e":"#f59e0b")+';font-weight:700">'+rs.ok+'/'+rs.tot+'</span> ':'');
  s+='<span class="mode-ind '+(S.learn?'learn':'test')+'" data-g2a="mode">'+(S.learn?'🎓 Учење':'📝 Тест '+t.km+'КМ')+'</span></div></div>';
@@ -1903,7 +1909,7 @@ function renderTask(){var t=curT();if(!t){G.view="area";return renderG2();}
  s+='<div class="tabs">';tabs.forEach(function(x){var c="";if(rs&&rs.tab[x[0]]){var q=rs.tab[x[0]];c='<span class="g2-tabchk" style="color:'+(q[0]===q[1]?"#4ade80":"#f87171")+'">'+(q[0]===q[1]?"✓":q[0]+"/"+q[1])+'</span>';}s+='<span class="tb'+(G.tab===x[0]?" on":"")+'" data-g2a="tab" data-v="'+x[0]+'">'+x[1]+c+'</span>';});s+='</div>';
  if(G.tab==="b"&&t.notes&&t.notes.length)t.notes.forEach(function(nt){s+='<div class="g2-note g2-warn">'+nt+'</div>';});
  if(G.tab==="b")s+=tabBilans(t,sol);else if(G.tab==="j")s+=tabDnevnik(t,sol);else if(G.tab==="g")s+=tabGK(t,sol);else if(G.tab==="z")s+=tabZak(t,sol);else s+=tabSol(t,sol);
- if(G.tab!=="s"){s+='<div class="g2-actions"><button class="btn1" data-g2a="check">✓ Провјери све</button><button class="btn2" data-g2a="show">👁 Одговори</button><button class="btn2" data-g2a="reset">🔄 Поново</button></div>';
+ if(G.tab!=="s"){s+='<div class="g2-actions"><button class="btn1" data-g2a="check">✓ Провјери све</button>'+(S.learn?'<button class="btn2" data-g2a="show">👁 Одговори са објашњењем</button>'+(G.allEx[G.tid]?'<button class="btn2" data-g2a="hideex">🙈 Сакриј објашњења</button>':''):'')+'<button class="btn2" data-g2a="reset">🔄 Поново</button></div>';
   if(rs){s+='<div class="res '+(rs.pct===100?"rok":"rpt")+'">'+(rs.pct===100?(S.learn?"🎉 Све тачно! Пребаци на Тест мод да зарадиш КМ.":"🎉 Све тачно!"+(G.wallet[t.id]?" Зарађено: "+G.wallet[t.id]+" КМ":"")):"Тачно "+rs.ok+" од "+rs.tot+" ("+rs.pct+"%). Погледај картице са црвеним бројем.")+'</div>';
    var er=rs.errs.filter(function(e){return e.tb===G.tab;});
    if(er.length){s+='<div class="errpanel"><div class="eptitle">❌ Грешке на овој картици ('+er.length+')</div>';
@@ -2023,7 +2029,11 @@ document.addEventListener("click",function(e){var b=e.target&&e.target.closest?e
  if(a==="go"){G.view=v;G.ex=null;if(v!=="parent")parentOK=false;window.scrollTo(0,0);render();}
  else if(a==="open"){G.tid=v;G.view="task";G.tab="b";G.ex=null;S.showTT=true;window.scrollTo(0,0);render();}
  else if(a==="tab"){G.tab=v;G.ex=null;render();}
- else if(a==="mode"){S.learn=!S.learn;G.ex=null;render();}
+ else if(a==="mode"){
+  // Ако су у Учењу приказани одговори, Тест почиње испочетка (да се КМ не зарађују на готовом рјешењу)
+  if(S.learn&&G.allEx[G.tid]){if(!confirm("Видио/ла си рјешење. Тест почиње испочетка, уписано ће се обрисати. Наставити?"))return;delete G.allEx[G.tid];delete G.inp[G.tid];delete G.rows[G.tid];delete G.res[G.tid];}
+  S.learn=!S.learn;G.ex=null;if(!S.learn&&G.tab==="s")G.tab="b";save();render();}
+ else if(a==="hideex"){delete G.allEx[G.tid];G.ex=null;save();render();}
  else if(a==="otv"){G.otv7000=v==="1";if(G.res[G.tid])delete G.res[G.tid];render();}
  else if(a==="ex"){G.ex=G.ex===v?null:v;render();}
  else if(a==="addrow"){var t=curT(),sol=solve(t),st=sol.st.filter(function(x){return x.nr===v;})[0];R()[v]=stavRows(st)+1;render();}
@@ -2051,7 +2061,14 @@ document.addEventListener("click",function(e){var b=e.target&&e.target.closest?e
 // Биљежење резултата из 1. разреда (за преглед родитеља)
 var dc1=window.doCheck,ds1=window.doShow;
 if(dc1)window.doCheck=function(){dc1.apply(this,arguments);try{var ks=Object.keys(S.chk),ok=0;ks.forEach(function(k){if(S.chk[k])ok++;});var anyIn=Object.keys(S.inp).some(function(k){return String(S.inp[k]||"").trim()!=="";});logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",pct:ks.length?Math.round(ok/ks.length*100):0,err:anyIn?(ks.length-ok?"погрешних поља: "+(ks.length-ok)+" од "+ks.length:""):"ништа није уписано"});}catch(err){}};
-if(ds1)window.doShow=function(){ds1.apply(this,arguments);try{logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",show:true});}catch(err){}};
+if(S.task&&G.allEx1===S.task.id)S.allEx=true;
+window.togMode1=function(){saveDOM();
+ if(S.learn&&(S.allEx||(S.task&&G.allEx1===S.task.id))){if(!confirm("Видио/ла си рјешење. Тест почиње испочетка, уписано ће се обрисати. Наставити?"))return;S.inp={};S.chk={};S.allEx=false;G.allEx1=null;save();}
+ S.learn=!S.learn;S.skipRead=true;render();S.skipRead=false;};
+var dr1=window.doReset,st1=window.startTask;
+if(dr1)window.doReset=function(){S.allEx=false;G.allEx1=null;save();dr1.apply(this,arguments);};
+if(st1)window.startTask=function(){S.allEx=false;return st1.apply(this,arguments);};
+if(ds1)window.doShow=function(){if(!S.learn)return;S.allEx=true;G.allEx1=S.task&&S.task.id;save();ds1.apply(this,arguments);try{logIt({g:1,id:S.task.id,title:S.task.title,mode:S.learn?"Учење":"Тест",show:true});}catch(err){}};
 setTimeout(flushReport,3000);
 window.G2={G:G,flushReport:flushReport,solve:solve,TK:TK,genTask:genTask,ACC:ACC};
 render();
