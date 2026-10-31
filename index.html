@@ -1617,10 +1617,12 @@ var sending=false;
 function minToday(){return Math.round((G.time[dkey(Date.now())]||0)/60000);}
 function queueRow(r){r.min=minToday();r.uredjaj=G.devName||("уређај "+G.devId);G.outbox.push(r);if(G.outbox.length>500)G.outbox=G.outbox.slice(-500);}
 function queueTime(){var k=dkey(Date.now()),m=minToday();if(m>0&&G.minSent[k]!==m){G.minSent[k]=m;queueRow({ts:Date.now(),vrsta:"Вријеме рада",razred:"",zadatak:"",rezim:"",pct:"",napomena:"активно данас "+m+" мин"});}}
-function flushReport(){var url=G.reportUrl||REPORT_URL;if(!url||sending||!G.outbox.length||!navigator.onLine)return;sending=true;var batch=G.outbox.slice(0,40);
+// Редови се скидају из реда чекања ПРИЈЕ слања: ако се апликација угаси током слања, не шаљу се поново
+// (иначе би се у табели појавили двапут). Ако слање не успије, враћају се у ред.
+function flushReport(){var url=G.reportUrl||REPORT_URL;if(!url||sending||!G.outbox.length||!navigator.onLine)return;sending=true;var batch=G.outbox.splice(0,40);save();
  fetch(url,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({rows:batch})})
- .then(function(){G.outbox.splice(0,batch.length);save();sending=false;if(G.outbox.length)flushReport();})
- .catch(function(){sending=false;});}
+ .then(function(){sending=false;if(G.outbox.length)flushReport();})
+ .catch(function(){G.outbox=batch.concat(G.outbox);save();sending=false;});}
 window.addEventListener("online",flushReport);
 setInterval(function(){queueTime();flushReport();},5*60000);
 
@@ -1783,7 +1785,7 @@ function errSummary(errs,inpm){
  if(!errs.length)return "";
  var names={b:"Биланс",j:"Дневник",g:"Главна књига",z:"Закључак"},by={};
  errs.forEach(function(e){var l=e.l;if(e.tb==="j")l=l.replace(/^Став /,"").replace(/ \(.*\)$/,"");else if(e.tb==="g"||e.tb==="z")l=l.split(" — ")[0];if(!by[e.tb])by[e.tb]=[];if(by[e.tb].indexOf(l)<0)by[e.tb].push(l);});
- var out=["b","j","g","z"].filter(function(k){return by[k];}).map(function(k){return names[k]+(k==="j"?": став ":": ")+by[k].join(", ");}).join(" · ");
+ var out=["b","j","g","z"].filter(function(k){return by[k];}).map(function(k){var l=by[k],n=l.length;return names[k]+": "+n+(n===1?" грешка":n<5?" грешке":" грешака")+" ("+(k==="j"?"став ":"")+l.slice(0,4).join(", ")+(n>4?"…":"")+")";}).join(" · ");
  return out.length>450?out.slice(0,447)+"…":out;}
 function ledExpl(a,L){var f=function(arr){return arr.length?arr.map(function(x){return x[0]+".) "+fmt(x[1]);}).join(" + "):"—";};
  var h="<b>"+an(a)+"</b><br>Дугује: "+f(L.D)+" = <b>"+fmt(L.pd)+"</b><br>Потражује: "+f(L.P)+" = <b>"+fmt(L.pp)+"</b><br>";
